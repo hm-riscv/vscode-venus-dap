@@ -26,9 +26,9 @@ const runMode: 'external' | 'server' | 'inline' = 'inline';
 
 export function activate(context: vscode.ExtensionContext) {
 
-	VenusLedMatrixUI.createNewInstance(context.extensionUri, new UIState(new LedMatrix(10, 10)))
-	VenusRobotUI.createNewInstance(context.extensionUri)
-	VenusSevenSegBoardUI.createNewInstance(context.extensionUri)
+	VenusLedMatrixUI.createNewInstance(context.extensionPath, new UIState(new LedMatrix(10, 10)))
+	VenusRobotUI.createNewInstance(context.extensionPath)
+	VenusSevenSegBoardUI.createNewInstance(context.extensionPath)
 	MemoryUI.createNewInstance()
 	venusTerminal.create();
 
@@ -71,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
 	  }));
 
 	context.subscriptions.push(vscode.commands.registerCommand('riscv-venus.openMemory', async config => {
-		MemoryUI.getInstance().show(context.extensionUri);
+		MemoryUI.getInstance().show(context.extensionPath);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('riscv-venus.openTerminal', async config => {
@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('riscv-venus.openDocumentation', async config => {
 		// Taken from: https://stackoverflow.com/questions/63960216/from-vs-code-extension-api-open-file-in-markdown-preview
-		const uri = vscode.Uri.joinPath(context.extensionUri, 'src', 'documentation', 'manual.md')
+		const uri = vscode.Uri.file(context.extensionPath +  '/src/documentation/manual.md')
 		await vscode.commands.executeCommand("markdown.showPreview", uri);
 		// let document =  await vscode.workspace.openTextDocument(vscode.Uri.joinPath(context.extensionUri, 'src', 'documentation', 'manual.md'))
 		// vscode.window.showTextDocument(document, vscode.ViewColumn.Active, false)
@@ -113,7 +113,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		case 'inline':
 			// run the debug adapter inside the extension and directly talk to it
-			factory = new InlineDebugAdapterFactory();
+			factory = new MockDebugAdapterDescriptorFactory();
 			break;
 
 		case 'external': default:

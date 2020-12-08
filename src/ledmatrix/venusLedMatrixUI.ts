@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import fs from 'fs'
+import { TheiaCompatibleVscodeUri } from '../theia/polyfill';
 
 /**
  * Manages a LED Matrix
@@ -12,7 +13,7 @@ export class VenusLedMatrixUI {
 
 	public static readonly viewType = 'VenusLedMatrixUI';
 	private _panel: vscode.WebviewPanel;
-	private static _extensionUri: vscode.Uri;
+	private static _extensionUri: TheiaCompatibleVscodeUri;
 	private _disposables: vscode.Disposable[] = [];
 	private static _uiState: UIState;
 
@@ -27,7 +28,7 @@ export class VenusLedMatrixUI {
 	}
 
 	/** Closes the old instance if available and opens a new one */
-	public static createNewInstance(extensionUri?: vscode.Uri, uiState?: UIState): VenusLedMatrixUI {
+	public static createNewInstance(extensionUri?: TheiaCompatibleVscodeUri, uiState?: UIState): VenusLedMatrixUI {
 		if (VenusLedMatrixUI.instance) {
 			VenusLedMatrixUI.instance.dispose();
 			VenusLedMatrixUI.instance = new VenusLedMatrixUI(extensionUri, uiState)
@@ -37,7 +38,7 @@ export class VenusLedMatrixUI {
 		return VenusLedMatrixUI.instance
 	}
 
-	private constructor(extensionUri?: vscode.Uri, uiState?: UIState) {
+	private constructor(extensionUri?: TheiaCompatibleVscodeUri, uiState?: UIState) {
 		if (extensionUri)
 			VenusLedMatrixUI._extensionUri = extensionUri
 		if (uiState) {
@@ -84,7 +85,7 @@ export class VenusLedMatrixUI {
 				enableScripts: true,
 
 				// And restrict the webview to only loading content from our extension's `ledmatrix` directory.
-				localResourceRoots: [vscode.Uri.joinPath(VenusLedMatrixUI._extensionUri, 'src', 'ledmatrix')]
+				localResourceRoots: [vscode.Uri.file(VenusLedMatrixUI._extensionUri + '/src/ledmatrix')]
 			}
 		);
 
@@ -129,15 +130,15 @@ export class VenusLedMatrixUI {
 
 	private _getHtmlForWebview(webview: vscode.Webview, ) {
 
-		const htmlPathOnDisk = vscode.Uri.joinPath(VenusLedMatrixUI._extensionUri, '/src/ledmatrix/venusLedMatrixUI.html');
+		const htmlPathOnDisk = vscode.Uri.file(VenusLedMatrixUI._extensionUri + '/src/ledmatrix/venusLedMatrixUI.html');
 		var htmlpath = htmlPathOnDisk.fsPath;
 		var html = fs.readFileSync(htmlpath).toString();
 
-		const onDiskPath = vscode.Uri.joinPath(VenusLedMatrixUI._extensionUri, '/src/ledmatrix/venusLedMatrixUI.js');
+		const onDiskPath = vscode.Uri.file(VenusLedMatrixUI._extensionUri + '/src/ledmatrix/venusLedMatrixUI.js');
 		const scriptSrc = webview.asWebviewUri(onDiskPath);
 		html = html.replace('${scriptSrc}', scriptSrc.toString());
 
-		const stylePath = vscode.Uri.joinPath(VenusLedMatrixUI._extensionUri, '/src/ledmatrix/venusLedMatrixUI.css');
+		const stylePath = vscode.Uri.file(VenusLedMatrixUI._extensionUri + '/src/ledmatrix/venusLedMatrixUI.css');
 		const styleSrc = webview.asWebviewUri(stylePath);
 		html = html.replace('${styleSrc}', styleSrc.toString());
 

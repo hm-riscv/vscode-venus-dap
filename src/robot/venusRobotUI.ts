@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import fs from 'fs'
+import { TheiaCompatibleVscodeUri } from '../theia/polyfill';
 
 /**
  * Manages cat coding webview panels
@@ -12,7 +13,7 @@ export class VenusRobotUI {
 
 	public static readonly viewType = 'VenusRobotUI';
 	private _panel: vscode.WebviewPanel;
-	private static _extensionUri: vscode.Uri;
+	private static _extensionUri: TheiaCompatibleVscodeUri;
 	private _disposables: vscode.Disposable[] = [];
 	private static _uiState: UIState;
 
@@ -27,7 +28,7 @@ export class VenusRobotUI {
 	}
 
 	/** Closes the old instance if available and opens a new one */
-	public static createNewInstance(extensionUri: vscode.Uri, uiState?: UIState): VenusRobotUI {
+	public static createNewInstance(extensionUri: TheiaCompatibleVscodeUri, uiState?: UIState): VenusRobotUI {
 		if (VenusRobotUI.instance) {
 			VenusRobotUI.instance.dispose();
 		}
@@ -35,7 +36,7 @@ export class VenusRobotUI {
 		return VenusRobotUI.instance
 	}
 
-	private constructor(extensionUri?: vscode.Uri, uiState?: UIState) {
+	private constructor(extensionUri?: TheiaCompatibleVscodeUri, uiState?: UIState) {
 		if (extensionUri)
 			VenusRobotUI._extensionUri = extensionUri
 		if (uiState) {
@@ -80,7 +81,7 @@ export class VenusRobotUI {
 				enableScripts: true,
 
 				// And restrict the webview to only loading content from our extension's `ui` directory.
-				localResourceRoots: [vscode.Uri.joinPath(VenusRobotUI._extensionUri, 'src', 'robot')]
+				localResourceRoots: [vscode.Uri.file(VenusRobotUI._extensionUri +  '/src/robot')]
 			}
 		);
 
@@ -125,15 +126,15 @@ export class VenusRobotUI {
 
 	private _getHtmlForWebview(webview: vscode.Webview, ) {
 
-		const htmlPathOnDisk = vscode.Uri.joinPath(VenusRobotUI._extensionUri, '/src/robot/venusRobotUI.html');
+		const htmlPathOnDisk = vscode.Uri.file(VenusRobotUI._extensionUri + '/src/robot/venusRobotUI.html');
 		var htmlpath = htmlPathOnDisk.fsPath;
 		var html = fs.readFileSync(htmlpath).toString();
 
-		const onDiskPath = vscode.Uri.joinPath(VenusRobotUI._extensionUri, '/src/robot/venusRobotUI.js');
+		const onDiskPath = vscode.Uri.file(VenusRobotUI._extensionUri + '/src/robot/venusRobotUI.js');
 		const scriptSrc = webview.asWebviewUri(onDiskPath);
 		html = html.replace('${scriptSrc}', scriptSrc.toString());
 
-		const stylePath = vscode.Uri.joinPath(VenusRobotUI._extensionUri, '/src/robot/venusRobotUI.css');
+		const stylePath = vscode.Uri.file(VenusRobotUI._extensionUri + '/src/robot/venusRobotUI.css');
 		const styleSrc = webview.asWebviewUri(stylePath);
 		html = html.replace('${styleSrc}', styleSrc.toString());
 

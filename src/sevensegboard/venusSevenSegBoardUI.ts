@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import fs from 'fs'
+import { TheiaCompatibleVscodeUri } from '../theia/polyfill';
 
 /**
  * Manages cat coding webview panels
@@ -12,7 +13,7 @@ export class VenusSevenSegBoardUI {
 
 	public static readonly viewType = 'VenusSevenSegBoardUI';
 	private _panel: vscode.WebviewPanel;
-	private static _extensionUri: vscode.Uri;
+	private static _extensionUri: TheiaCompatibleVscodeUri;
 	private _disposables: vscode.Disposable[] = [];
 	private static _uiState: UIState;
 
@@ -27,7 +28,7 @@ export class VenusSevenSegBoardUI {
 	}
 
 	/** Closes the old instance if available and opens a new one */
-	public static createNewInstance(extensionUri: vscode.Uri, uiState?: UIState): VenusSevenSegBoardUI {
+	public static createNewInstance(extensionUri: TheiaCompatibleVscodeUri, uiState?: UIState): VenusSevenSegBoardUI {
 		if (VenusSevenSegBoardUI.instance) {
 			VenusSevenSegBoardUI.instance.dispose();
 		}
@@ -35,7 +36,7 @@ export class VenusSevenSegBoardUI {
 		return VenusSevenSegBoardUI.instance
 	}
 
-	private constructor(extensionUri?: vscode.Uri, uiState?: UIState) {
+	private constructor(extensionUri?: TheiaCompatibleVscodeUri, uiState?: UIState) {
 		if (extensionUri)
 			VenusSevenSegBoardUI._extensionUri = extensionUri
 		if (uiState) {
@@ -81,7 +82,7 @@ export class VenusSevenSegBoardUI {
 				enableScripts: true,
 
 				// And restrict the webview to only loading content from our extension's `ui` directory.
-				localResourceRoots: [vscode.Uri.joinPath(VenusSevenSegBoardUI._extensionUri, 'src', 'sevensegboard')]
+				localResourceRoots: [vscode.Uri.file(VenusSevenSegBoardUI._extensionUri + '/src/sevensegboard')]
 			}
 		);
 
@@ -130,19 +131,19 @@ export class VenusSevenSegBoardUI {
 
 	private _getHtmlForWebview(webview: vscode.Webview, ) {
 
-		const htmlPathOnDisk = vscode.Uri.joinPath(VenusSevenSegBoardUI._extensionUri, '/src/sevensegboard/venusSevenSegBoardUI.html');
+		const htmlPathOnDisk = vscode.Uri.file(VenusSevenSegBoardUI._extensionUri + '/src/sevensegboard/venusSevenSegBoardUI.html');
 		var htmlpath = htmlPathOnDisk.fsPath;
 		var html = fs.readFileSync(htmlpath).toString();
 
-		const onDiskPath = vscode.Uri.joinPath(VenusSevenSegBoardUI._extensionUri, '/src/sevensegboard/venusSevenSegBoardUI.js');
+		const onDiskPath = vscode.Uri.file(VenusSevenSegBoardUI._extensionUri + '/src/sevensegboard/venusSevenSegBoardUI.js');
 		const scriptSrc = webview.asWebviewUri(onDiskPath);
 		html = html.replace('${scriptSrc}', scriptSrc.toString());
 
-		const stylePath = vscode.Uri.joinPath(VenusSevenSegBoardUI._extensionUri, '/src/sevensegboard/venusSevenSegBoardUI.css');
+		const stylePath = vscode.Uri.file(VenusSevenSegBoardUI._extensionUri + '/src/sevensegboard/venusSevenSegBoardUI.css');
 		const styleSrc = webview.asWebviewUri(stylePath);
 		html = html.replace('${styleSrc}', styleSrc.toString());
 
-		const svgPathOnDisk = vscode.Uri.joinPath(VenusSevenSegBoardUI._extensionUri, '/src/sevensegboard/board.svg');
+		const svgPathOnDisk = vscode.Uri.file(VenusSevenSegBoardUI._extensionUri + '/src/sevensegboard/board.svg');
 		html = html.replace('${svgSource}', fs.readFileSync(svgPathOnDisk.fsPath).toString());
 
 		return html;

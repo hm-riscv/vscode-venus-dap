@@ -380,7 +380,7 @@ export class VenusRuntime extends EventEmitter {
 	public stack(startFrame: number, endFrame: number): any {
 
 		return {
-			frames: this._functionStack,
+			frames: this._functionStack.slice(0,1),
 			count: this._functionStack.length
 		};
 

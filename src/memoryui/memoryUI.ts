@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import fs from 'fs'
 import simulator = require('../runtime/riscvSimulator');
 import range from 'lodash/range';
+import { TheiaCompatibleVscodeUri } from '../theia/polyfill';
 
 /**
  * Manages cat coding webview panels
@@ -14,7 +15,7 @@ export class MemoryUI {
 
 	public static readonly viewType = 'venusUI';
 	private _panel: vscode.WebviewPanel;
-	private _extensionUri: vscode.Uri;
+	private _extensionUri: TheiaCompatibleVscodeUri;
 	private _disposables: vscode.Disposable[] = [];
 	private _uiState: UIState;
 
@@ -55,7 +56,7 @@ export class MemoryUI {
 		}
 	}
 
-	public show(extensionUri: vscode.Uri) {
+	public show(extensionUri: TheiaCompatibleVscodeUri) {
 		// If we already have a panel, show it.
 		if (MemoryUI.instance?._panel) {
 			MemoryUI.instance._panel.reveal();
@@ -80,7 +81,7 @@ export class MemoryUI {
 
 	}
 
-	private _addPanel(extensionUri: vscode.Uri) {
+	private _addPanel(extensionUri: TheiaCompatibleVscodeUri) {
 
 		// Otherwise, create a new panel.
 		const panel = vscode.window.createWebviewPanel(
@@ -92,7 +93,7 @@ export class MemoryUI {
 				enableScripts: true,
 
 				// And restrict the webview to only loading content from our extension's `src/memoryui` directory.
-				localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'src', 'memoryui')]
+				localResourceRoots: [vscode.Uri.file(extensionUri + '/src/memoryui')]
 			}
 		);
 
@@ -162,15 +163,15 @@ export class MemoryUI {
 
 	private _getHtmlForWebview(webview: vscode.Webview, ) {
 
-		const htmlPathOnDisk = vscode.Uri.joinPath(this._extensionUri, '/src/memoryui/memoryUI.html');
+		const htmlPathOnDisk = vscode.Uri.file(this._extensionUri + '/src/memoryui/memoryUI.html');
 		var htmlpath = htmlPathOnDisk.fsPath;
 		var html = fs.readFileSync(htmlpath).toString();
 
-		const onDiskPath = vscode.Uri.joinPath(this._extensionUri, '/src/memoryui/memoryUI.js');
+		const onDiskPath = vscode.Uri.file(this._extensionUri + '/src/memoryui/memoryUI.js');
 		const scriptSrc = webview.asWebviewUri(onDiskPath);
 		html = html.replace('${scriptSrc}', scriptSrc.toString());
 
-		const stylePath = vscode.Uri.joinPath(this._extensionUri, '/src/memoryui/memoryUI.css');
+		const stylePath = vscode.Uri.file(this._extensionUri + '/src/memoryui/memoryUI.css');
 		const styleSrc = webview.asWebviewUri(stylePath);
 		html = html.replace('${styleSrc}', styleSrc.toString());
 
